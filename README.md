@@ -1,17 +1,22 @@
+## bootstraping using terraform ##
 
-setup aws key in a credential file 
+Setup aws key in a credential file 
 
-* setup your variables in terraform.tfvars
+Setup your variables in terraform.tfvars
+
 Usage in main.tf:
 
-        provider "aws" {
+      provider "aws" {
           region = "${var.region}"
           profile = "${var.aws_profile}"
           shared_credentials_file = "/Users/tf_user/.aws/creds" # <---- used to set custom credentials file path.
-        }
+      }
 
 *You can use any other way for setting the credentials as recommended by Terraform.
 
-*       terraform validate
-*       terraform init
-*       terraform plan
+Then you can run the following:
+
+       $ terraform validate
+       $ terraform init
+       $ terraform plan
+       $ 
