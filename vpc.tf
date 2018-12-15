@@ -1,14 +1,16 @@
-#variable "system" {}
-#variable "environment" {}
-#variable "vpc_cidr" {}
-#variable "aws_zones" {type = "list"}
-#variable "vpc_private_subnets" {type = "list"}
-#variable "vpc_public_subnets" {type = "list"}
-#variable "common_tags" {type = "map" default = {}}
+locals {
+   system = "${var.common_tags["system"]}"
+   environment = "${var.common_tags["environment"]}"
+   }
+variable "vpc_cidr" {}
+variable "aws_zones" {type = "list"}
+variable "vpc_private_subnets" {type = "list"}
+variable "vpc_public_subnets" {type = "list"}
+variable "common_tags" {type = "map" default = {}}
 
 module "vpc" {
   source = "terraform-aws-modules/vpc/aws"
-  name = "${var.system}-${var.environment}-Vpc-schf"
+  name = "${local.system}-${local.environment}-Vpc-schf"
   cidr = "${var.vpc_cidr}"
 
   azs             = "${var.aws_zones}"
@@ -19,22 +21,22 @@ module "vpc" {
   single_nat_gateway = true
 
   public_subnet_tags = {
-    Name = "${var.common_tags["system"]}-${var.common_tags["environment"]}-public}"
+    Name = "${local.system}-${local.environment}-public}"
   }
 
   private_subnet_tags = {
-    Name = "${var.common_tags["system"]-$var.common_tags["environment"]-private}"
+    Name = "${local.system}-${local.environment}-private}"
   }
-#
-#  tags = "${merge(
-#           var.common_tags,
-#	   map(
-#	     "wat", "awesome-app-server",
-#	     "Role", "server"
-#	   )
-#	 )}"
+
+  tags = "${merge(
+           var.common_tags,
+	   map(
+	     "wat", "awesome-app-server",
+	     "Role", "server"
+	   )
+	 )}"
 
   vpc_tags = {
-    Name = "${var.system}-${var.environment}-VPC"
+    Name = "${local.system}-${local.environment}-VPC"
   }
 }

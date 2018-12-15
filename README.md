@@ -9,6 +9,7 @@ Usage in main.tf:
         profile = "${var.aws_profile}"
         shared_credentials_file = "/Users/tf_user/.aws/creds" # <---- used to set custom credentials file path.
     }
+    
 *You can use any other way for setting the credentials as recommended by Terraform.
 
 * Setup your common tags in main.tf
