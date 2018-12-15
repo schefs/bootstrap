@@ -10,7 +10,7 @@ locals {
 
 module "vpc" {
   source = "terraform-aws-modules/vpc/aws"
-  name = "${local.system}-${local.environment}-Vpc-schf"
+  name = "${local.system}-${local.environment}-Vpc"
   cidr = "${var.vpc_cidr}"
 
   azs             = "${var.aws_zones}"
@@ -21,11 +21,11 @@ module "vpc" {
   single_nat_gateway = true
 
   public_subnet_tags = {
-    Name = "${local.system}-${local.environment}-public}"
+    Name = "${local.system}-${local.environment}-public"
   }
 
   private_subnet_tags = {
-    Name = "${local.system}-${local.environment}-private}"
+    Name = "${local.system}-${local.environment}-private"
   }
 
   tags = "${merge(
