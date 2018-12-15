@@ -1,12 +1,12 @@
-locals {
-   system = "${var.common_tags["system"]}"
-   environment = "${var.common_tags["environment"]}"
-   }
 variable "vpc_cidr" {}
 variable "aws_zones" {type = "list"}
 variable "vpc_private_subnets" {type = "list"}
 variable "vpc_public_subnets" {type = "list"}
 variable "common_tags" {type = "map" default = {}}
+locals {
+  system = "${var.common_tags["system"]}"
+  environment = "${var.common_tags["environment"]}"
+}
 
 module "vpc" {
   source = "terraform-aws-modules/vpc/aws"
