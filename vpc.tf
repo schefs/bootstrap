@@ -18,7 +18,9 @@ module "vpc" {
   public_subnets  = "${var.vpc_public_subnets}"
 
   enable_nat_gateway = true
-  single_nat_gateway = true
+  single_nat_gateway = false
+  one_nat_gateway_per_az = true
+
 
   public_subnet_tags = {
     Name = "${local.system}-${local.environment}-public"
@@ -31,8 +33,8 @@ module "vpc" {
   tags = "${merge(
            var.common_tags,
 	   map(
-	     "wat", "awesome-app-server",
-	     "Role", "server"
+	     "wat", "my_vpc",
+	     "foo", "bar"
 	   )
 	 )}"
 

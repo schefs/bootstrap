@@ -1,5 +1,18 @@
 ## bootstraping using terraform ##
 
+**What are we going to boostrap here ?**
+
+1 VPC with 4 subnets (2 public & 2 private in different AZ), with NAT GW for each AZ for redundancy.
+k8s
+
+**Installation requirements**
+
+Terraform
+Kubectl
+KOPS
+
+
+**Lets GO !**
 Setup aws key in a credential file 
 
 Setup your variables in terraform.tfvars
