@@ -27,3 +27,9 @@ output "nat_public_ips" {
   description = "List of public Elastic IPs created for AWS NAT Gateway"
   value       = ["${module.vpc.nat_public_ips}"]
 }
+
+# KOPS s3 state bucket
+output "kops_s3_state_bucket" {
+  description = "Name of the bucket that stores kops cluster state"
+  value       = ["${aws_s3_bucket.kops-state-bucket.bucket}"]
+}
