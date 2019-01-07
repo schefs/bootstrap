@@ -33,3 +33,16 @@ output "kops_s3_state_bucket" {
   description = "Name of the bucket that stores kops cluster state"
   value       = ["${aws_s3_bucket.kops-state-bucket.bucket}"]
 }
+ 
+ output "dns_zone_id" {
+   description = "ID of the route53 dns zone"
+   value =  "${aws_route53_zone.private.zone_id}"
+ }
+  output "dns_zone_name" {
+   description = "Name of the route53 dns zone"
+   value =  "${var.kubernetes_cluster_name}"
+ }
+ output "common_tags" {
+   description = "common tags used across all aws resources"
+   value = "${var.common_tags}"
+ }
