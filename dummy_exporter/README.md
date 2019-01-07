@@ -1,0 +1,3 @@
+ - docker build -t my_dummy_exporter:latest .
+ - docker run -d -p 65433:65433 --name my_dummy_exporter schefs/my_dummy_exporter
+ - Then you can curl `http://localhost:65433` to make sure everything works.
