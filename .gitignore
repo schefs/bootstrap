@@ -5,3 +5,6 @@
 *.tfstate
 *.tfstate.*
 
+# .vscode settings
+/.vscode/
+/.vscode/*
