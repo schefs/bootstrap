@@ -74,7 +74,7 @@ generate key-pair for kops. it will be saved by deafult in ~/.ssh and kops will 
 
 
 
-tells Kops that we want to use a private network topology. Our Kubernetes instances will live in private subnets in each zone.
+We are going to tells Kops that we want to use a private network topology. Our Kubernetes instances will live in private subnets in each zone.
 you can chose any kubernetes networking implementations you desire.
 I chose Calico for cluster networking for several reasons.
 Since we are using a private topology, we cannot use the default kubenet mode (also we are running in multi AZ). Calico allows to surpass the 50 node limit, which exists as a consequence of the AWS 50 route limit when using the VPC routing table.
@@ -86,6 +86,8 @@ Calico provides fine-grained network security policy for individual containers. 
 
 Cross-Subnet mode in Calico
 With this mode, IP-in-IP encapsulation is only performed selectively. This provides better performance in AWS multi-AZ deployments, and in general when deploying on networks where pools of nodes with L2 connectivity are connected via a router.
+
+kops can spit out its intentions to terraform .tf file to use for initial deploy, but you should note that if you modify the Terraform files that kops spits out, it will override your changes with the configuration state defined by its own configs in the s3 bucket. In other terms, kops own state is the ultimate source of truth (as far as kops is concerned), and Terraform is a representation of that state for your convenience. Meaning that if you run a `kops edit cluster` and update your cluster without also updating your terraform files you will easily get out of sync so for our specific use case without any automation enforcing you to always update the tf state. you can also create a third party resources (like load balancers for your application services) that only kops can destroy during a clusters teardown without the option built in to modify the tf state currently. I think this feature is not mature enough to use in our use case so I would stick to updating the cluster strait from kops for a strait forward approach for every cluster creation, update or teardown. if you still want to do so you can read about it [here](https://github.com/kubernetes/kops/blob/master/docs/terraform.md).
 
 
     $ kops create cluster \
