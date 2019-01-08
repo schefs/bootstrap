@@ -1,0 +1,56 @@
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dummy-exporter
+  namespace: default
+  labels:
+    app: dummy-exporter
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: dummy-exporter
+  template:
+    metadata:
+      labels:
+        app: dummy-exporter
+    spec:
+      containers:
+      - name: dummy-exporter
+        image: schefs/my_dummy_exporter:stable
+        ports:
+        - containerPort: 65433
+
+---
+
+kind: Service
+apiVersion: v1
+metadata:
+  name: dummy-exporter
+spec:
+  selector:
+    app: dummy-exporter
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 65433
+
+---
+
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: test-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /dummy_exporter
+        backend:
+          serviceName: dummy_exporter
+          servicePort: 80
+
