@@ -183,8 +183,6 @@ metadata:
   name: haproxy-ingress
   namespace: ingress-controller
 spec:
-  updateStrategy:
-    type: RollingUpdate
   selector:
     matchLabels:
       run: haproxy-ingress
