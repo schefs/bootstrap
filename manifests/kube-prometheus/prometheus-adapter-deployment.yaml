@@ -39,8 +39,6 @@ spec:
         - mountPath: /etc/adapter
           name: config
           readOnly: false
-      nodeSelector:
-        beta.kubernetes.io/os: linux
       serviceAccountName: prometheus-adapter
       volumes:
       - emptyDir: {}

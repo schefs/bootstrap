@@ -10,7 +10,6 @@ spec:
   - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
     interval: 15s
     port: metrics
-  jobLabel: k8s-app
   namespaceSelector:
     matchNames:
     - kube-system
