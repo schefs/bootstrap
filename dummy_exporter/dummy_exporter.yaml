@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
       - name: dummy-exporter
-        image: schefs/my_dummy_exporter:stable
+        image: schef/my_dummy_exporter:stable
         ports:
         - containerPort: 65433
 
@@ -42,15 +42,17 @@ spec:
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-  name: test-ingress
+  name: dummy-exporter
+  namespace: default
   annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /
+    ingress.kubernetes.io/ssl-redirect: false
+    ingress.kubernetes.io/app-root: /
 spec:
   rules:
   - http:
       paths:
       - path: /dummy_exporter
         backend:
-          serviceName: dummy_exporter
+          serviceName: dummy-exporter
           servicePort: 80
 
