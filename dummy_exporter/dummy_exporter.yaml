@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
       - name: dummy-exporter
-        image: schef/my_dummy_exporter:stable
+        image: schef/dummy_exporter:stable
         ports:
         - containerPort: 65433
 
