@@ -1,3 +1,9 @@
+# AZ
+output "AZ" {
+  description = "List of AZs"
+  value       = "${var.aws_zones}"
+}
+
 # VPC
 output "vpc_id" {
   description = "The ID of the VPC"
