@@ -105,7 +105,7 @@ kops can spit out its intentions to terraform .tf file to use for initial deploy
      --dns-zone=$(terraform output dns_zone_id) \
      --vpc=$(terraform output vpc_id) \
      --dns private \
-     --node-size t2.micro \
+     --node-size t2.small \
      --master-size t2.micro \
      --topology private \
      --networking calico \
@@ -150,17 +150,23 @@ You will need to change that block, and add an additional field, to look like th
 kops toolbox dump --state s3://$(terraform output kops_s3_state_bucket) --name $(terraform output dns_zone_name) -->
 
 ### Initiate and create cluster resources
+
     $ export KOPS_STATE_STORE=s3://$(terraform output kops_s3_state_bucket)
     $ export KOPS_CLUSTER_NAME=$(terraform output dns_zone_name)
     $ kops update cluster --yes
     # kops update cluster --state s3://$(terraform output kops_s3_state_bucket --yes
 
-### Using the cluster
+### Accessing the cluster
 
 Your local kubectl install is now configured with you new cluster. run `kubectl get nodes` to make sure everything is up and running.
 
 Check your aws console for your newly created ELB address so you can SSH into the bastion. from here you can ssh into any node in the private subnets (you are probably dont need to do that anyway).
     ssh -A admin@<bastion-ELB-address>
+
+### deploy manifests to the cluster
+
+    $ cd ../manifests
+    $ 
 
 
 
