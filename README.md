@@ -1,20 +1,18 @@
-## bootstraping using terraform ##
+# Bootstrapping
 
-**What are we going to boostrap here ?**
+**What are we going to bootstrap here ?**
 
 1 VPC with 4 subnets (2 public & 2 private in different AZ), with NAT GW for each AZ for redundancy.
-k8s spread accross all 3 AZ with 1 master in each zone and 3 compute nodes also one in each zone (all in private subnets).
+k8s spread across all 3 AZ with 1 master in each zone and 3 compute nodes also one in each zone (all in private subnets).
 1 bastion host in your vpc for secure ssh access to the cluster.
 
-
-**Installation requirements**
+## Installation requirements
 
 - Terraform
 - Kubectl
 - KOPS
 
-
-**Lets GO !**
+## Lets start with terraform
 
 - create an AWS IAM User with Programmatic Access and assign following permissions:
 
@@ -26,8 +24,7 @@ k8s spread accross all 3 AZ with 1 master in each zone and 3 compute nodes also 
 
 - Setup aws key in a credential file.
 
-*You will need to raise the default EIP limit from 5 to 6 at least
-
+*You will need to raise the default aws account EIP limit from 5 to 6 at least
 
 - Setup your variables in terraform.tfvars.
 
@@ -43,6 +40,7 @@ Usage in main.tf:
 
 Then you can run the following:
 
+    $ cd ./terraform
     $ terraform validate
     $ terraform init
     $ terraform plan
@@ -50,8 +48,7 @@ Then you can run the following:
 
 Note that executing this will create resources which can cost money (VPC, AWS Elastic IP, for example). Don't forget to run `terraform destroy` when you don't need these resources.
 
-
-## Outputs
+### Outputs
 
 | Name | Description |
 |------|-------------|
@@ -64,7 +61,9 @@ Note that executing this will create resources which can cost money (VPC, AWS El
 | dns\_zone\_id | ID of the route53 dns zone |
 | dns\_zone\_name | Name of the route53 dns zone |
 | common\_tags | Map of common tags used across all aws resources |
+| AZ | List of AZs |
 
+## Kubernetes
 
 For security, all master/worker nodes are in a private subnet and not exposed to the Internet. Also instantiate a bastion host as the sole entry point into the cluster via SSH, and the cluster is configured to enable RBAC as its authorization mode. Its control plane/API requires authentication via client certificate based authentication (will be available automatically with deploy automation in your ~/.kube/config).
 You will need to create a ssh key pair to access the bastion host if you want to be able to ssh into the nodes.
@@ -73,29 +72,34 @@ generate key-pair for kops. it will be saved by deafult in ~/.ssh and kops will 
     $ssh-keygen
 
 
+### Lets talk about networking
 
 We are going to tells Kops that we want to use a private network topology. Our Kubernetes instances will live in private subnets in each zone.
 you can chose any kubernetes networking implementations you desire.
 I chose Calico for cluster networking for several reasons.
-Since we are using a private topology, we cannot use the default kubenet mode (also we are running in multi AZ). Calico allows to surpass the 50 node limit, which exists as a consequence of the AWS 50 route limit when using the VPC routing table.
-Since we deploy kubernetes across multiple AZs for high availability then each AZ will have its own subnet so we need a networking solution that can support that like calico.
-Within each VPC subnet Calico doesn’t need an overlay, it will enable a larger scale deployment with great performance.
-Compared to other networking solutions calico is considered light with a small memory&cpu footprint on the nodes compared to its rivals which is a great plus for my use case.
-Calico provides fine-grained network security policy for individual containers. can be useful for a user specific ingress/egress rules natively implemented in kubernetes manifest and not as a third party resource.
 
+- Since we are using a private topology, we cannot use the default kubenet mode (also we are running in multi AZ).
+- Calico allows to surpass the 50 node limit, which exists as a consequence of the AWS 50 route limit when using the VPC routing table.
+- Since we deploy kubernetes across multiple AZs for high availability then each AZ will have its own subnet so we need a networking solution that can support that like calico.
+- Cross-Subnet mode in Calico. By default, Calico’s IPIP encapsulation applies to all container-to-container traffic. However, encapsulation is only required for container traffic that crosses a VPC subnet boundary. For better performance, you can configure Calico to perform IPIP encapsulation only across VPC subnet boundaries. With this mode, IP-in-IP encapsulation is only performed selectively. This provides better performance in AWS multi-AZ deployments, and in general when deploying on networks where pools of nodes with L2 connectivity are connected via a router.
+- BGP route reflectors - Calico by default, routes between nodes within a subnet are distributed using a full node-to-node BGP mesh. Each node automatically sets up a BGP peering with every other node within the same L2 network. This full node-to-node mesh per L2 network has its scaling challenges for larger scale deployments. BGP route reflectors can be used as a replacement to a full mesh, and is useful for scaling up a cluster. Performance benefits are mostly relevant to large ~50-100+ nodes clusters, so if you are planning to go this direction you should Read more here: [BGP route reflectors](https://docs.projectcalico.org/v3.4/usage/routereflector) (The setup of BGP route reflectors is currently out of the scope of kops and needs to be implemented manually).
+- Compared to other networking solutions calico is considered light with a small memory&cpu footprint on the nodes compared to its rivals which is a great plus for my use case.
+- Calico provides fine-grained network security policy for individual containers. can be useful for a user specific ingress/egress rules natively implemented in kubernetes manifest and not as a third party resource.
 
-Cross-Subnet mode in Calico
-With this mode, IP-in-IP encapsulation is only performed selectively. This provides better performance in AWS multi-AZ deployments, and in general when deploying on networks where pools of nodes with L2 connectivity are connected via a router.
+### Terraform for KOPS
 
 kops can spit out its intentions to terraform .tf file to use for initial deploy, but you should note that if you modify the Terraform files that kops spits out, it will override your changes with the configuration state defined by its own configs in the s3 bucket. In other terms, kops own state is the ultimate source of truth (as far as kops is concerned), and Terraform is a representation of that state for your convenience. Meaning that if you run a `kops edit cluster` and update your cluster without also updating your terraform files you will easily get out of sync so for our specific use case without any automation enforcing you to always update the tf state. you can also create a third party resources (like load balancers for your application services) that only kops can destroy during a clusters teardown without the option built in to modify the tf state currently. I think this feature is not mature enough to use in our use case so I would stick to updating the cluster strait from kops for a strait forward approach for every cluster creation, update or teardown. You will need to add `--target=terraform \ --out=. \kops` to your cluster creation to tell kops to spit out its state to terraform. If you still want to do so you can read about it [here](https://github.com/kubernetes/kops/blob/master/docs/terraform.md).
 
+### Generate a cluster
+
+*You can probably skip this part and go head and use the pre created one.
 
     $ kops create cluster \
      --cloud=aws \
      --state=s3://$(terraform output kops_s3_state_bucket) \
      --node-count 3 \
-     --zones us-east-2a,us-east-2b,us-east-2c \
-     --master-zones us-east-2a,us-east-2b,us-east-2c \
+     --zones $(terraform.exe output AZ |tr -d '\n') \
+     --master-zones $(terraform.exe output AZ |tr -d '\n') \
      --dns-zone=$(terraform output dns_zone_id) \
      --vpc=$(terraform output vpc_id) \
      --dns private \
@@ -106,35 +110,62 @@ kops can spit out its intentions to terraform .tf file to use for initial deploy
      --bastion \
      --ssh-public-key ~/.ssh/id_rsa.pub \
      --cloud-labels $(terraform output common_tags|tr '\n' ','|sed 's/ //g'|sed 's/.$//') \
-     $(terraform output dns_zone_name)
-     
-     
-     kops create cluster \
-     --cloud=aws \
-     --state=s3://aws_s3_bucket.kops-state-bucket.bucket} \
-     --node-count 3 \
-     --zones us-east-2a,us-east-2b,us-east-2c \
-     --master-zones us-east-2a,us-east-2b,us-east-2c \
-     --dns-zone=aws_route53_zone.private.zone_id \
-     --vpc=module.vpc.vpc_id \
-     --dns private \
-     --node-size t2.micro \
-     --master-size t2.micro \
-     --topology private \
-     --networking calico \
-     --bastion \
-     --ssh-public-key ~/.ssh/id_rsa.pub \
-     --target=terraform \
-     --out=. \
-     var.kubernetes_cluster_name
+     --name $(terraform output dns_zone_name)
 
+                        #--subnets $(terraform output private_subnets|tr -d '\n') \
+                        #export SUBNET_IDS=$(terraform output private_subnets|tr -d '\n')
 
-     --cloud-labels $(terraform output common_tags|tr '\n' ','|sed 's/ //g'|sed 's/.$//') \
+### Add Calico Cross-Subnet mode
 
+To enable this mode in a cluster, with Calico as the CNI and Network Policy provider, you must edit the cluster after the previous `kops create ...` command. This will help you to boost networking performance in a larger scale cluster, but its defiantly not obligatory.
 
+`kops edit cluster`  will show you a block like this:
 
- #--subnets $(terraform output private_subnets|tr -d '\n') \
+```
+  networking:
+    calico:
+      majorVersion: v3
+```
 
-    $  kops update cluster --yes schef.dev.k8s
-check your aws console for your newly created ELB address so you can SSH into the bastion. from here you can ssh into any node in the private subnets.
+You will need to change that block, and add an additional field, to look like this:
+
+```
+  networking:
+    calico:
+      majorVersion: v3
+      crossSubnet: true
+```
+
+<!-- ### fdhfghddfgfg
+
+    $ export KOPS_STATE_STORE=s3://$(terraform output kops_s3_state_bucket)
+    $ export KOPS_CLUSTER_NAME=$(terraform output dns_zone_name)
+    $ kops get cluster -o yaml > cluster-desired-config.yaml
+    $ 
+
+### Deploy KOPS from template yaml
+
+kops toolbox dump --state s3://$(terraform output kops_s3_state_bucket) --name $(terraform output dns_zone_name) -->
+
+### Initiate and create cluster resources
+    $ export KOPS_STATE_STORE=s3://$(terraform output kops_s3_state_bucket)
+    $ export KOPS_CLUSTER_NAME=$(terraform output dns_zone_name)
+    $ kops update cluster --yes
+    # kops update cluster --state s3://$(terraform output kops_s3_state_bucket --yes
+
+### Using the cluster
+
+Your local kubectl install is now configured with you new cluster. run `kubectl get nodes` to make sure everything is up and running.
+
+Check your aws console for your newly created ELB address so you can SSH into the bastion. from here you can ssh into any node in the private subnets (you are probably dont need to do that anyway).
     ssh -A admin@<bastion-ELB-address>
+
+
+
+
+## Teardown
+
+    $ kops delete cluster --name schef.dev.k8s --state s3://kops-state-testing-dev --yes
+    $ terraform destroy
+
+
