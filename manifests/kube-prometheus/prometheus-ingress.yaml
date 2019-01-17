@@ -4,8 +4,8 @@ metadata:
   name: prometheus
   namespace: monitoring
   annotations:
-    ingress.kubernetes.io/ssl-redirect: false
-    ingress.kubernetes.io/app-root: /
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
 spec:
   rules:
   - http:

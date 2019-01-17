@@ -29,6 +29,7 @@ kind: Service
 apiVersion: v1
 metadata:
   name: dummy-exporter
+  namespace: default
 spec:
   selector:
     app: dummy-exporter
@@ -45,13 +46,13 @@ metadata:
   name: dummy-exporter
   namespace: default
   annotations:
-    ingress.kubernetes.io/ssl-redirect: false
-    ingress.kubernetes.io/app-root: /
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
 spec:
   rules:
   - http:
       paths:
-      - path: /dummy_exporter
+      - path: /dummy-exporter
         backend:
           serviceName: dummy-exporter
           servicePort: 80
