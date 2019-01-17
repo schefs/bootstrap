@@ -1,0 +1,16 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: alertmanager
+  namespace: monitoring
+  annotations:
+    ingress.kubernetes.io/ssl-redirect: false
+    ingress.kubernetes.io/app-root: /
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /alertmanager
+        backend:
+          serviceName: alertmanager-main
+          servicePort: 9093
