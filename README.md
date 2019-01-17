@@ -2,9 +2,11 @@
 
 **What are we going to bootstrap here ?**
 
-1 VPC with 4 subnets (2 public & 2 private in different AZ), with NAT GW for each AZ for redundancy.
+1 VPC with 6 subnets (3 public & 3 private in different AZ), with NAT GW for each AZ for redundancy for vm workload.
+Another 6 subnets for k8s (3 private for compute nodes and 3 infra for masters API, LB, bastion host etc..)
 k8s spread across all 3 AZ with 1 master in each zone and 3 compute nodes also one in each zone (all in private subnets).
 1 bastion host in your vpc for secure ssh access to the cluster.
+All k8s nodes including the master will be created in a auto scaling group for dealing with recovery scenarios in case of servers fault.
 
 ## Installation requirements
 
@@ -88,7 +90,7 @@ I chose Calico for cluster networking for several reasons.
 
 ### Terraform for KOPS
 
-kops can spit out its intentions to terraform .tf file to use for initial deploy, but you should note that if you modify the Terraform files that kops spits out, it will override your changes with the configuration state defined by its own configs in the s3 bucket. In other terms, kops own state is the ultimate source of truth (as far as kops is concerned), and Terraform is a representation of that state for your convenience. Meaning that if you run a `kops edit cluster` and update your cluster without also updating your terraform files you will easily get out of sync so for our specific use case without any automation enforcing you to always update the tf state. you can also create a third party resources (like load balancers for your application services) that only kops can destroy during a clusters teardown without the option built in to modify the tf state currently. I think this feature is not mature enough to use in our use case so I would stick to updating the cluster strait from kops for a strait forward approach for every cluster creation, update or teardown. You will need to add `--target=terraform \ --out=. \kops` to your cluster creation to tell kops to spit out its state to terraform. If you still want to do so you can read about it [here](https://github.com/kubernetes/kops/blob/master/docs/terraform.md).
+kops can spit out its intentions to terraform .tf file to use for initial deploy, but you should note that if you modify the Terraform files that kops spits out, it will override your changes with the configuration state defined by its own configs in the s3 bucket. In other terms, kops own state is the ultimate source of truth (as far as kops is concerned), and Terraform is a representation of that state for your convenience. Meaning that if you run a `kops edit cluster` and update your cluster without also updating your terraform files you will easily get out of sync, so for our specific use case without any automation enforcing you to always update the tf state. you can also create a third party resources (like load balancers for your application services) that only kops can destroy during a clusters teardown without the option built in to modify the tf state currently. I think this feature is not mature enough to use in our use case so I would stick to updating the cluster strait from kops for a strait forward approach for every cluster creation, update or teardown. You will need to add `--target=terraform \ --out=. \kops` to your cluster creation to tell kops to spit out its state to terraform. If you still want to do so you can read about it [here](https://github.com/kubernetes/kops/blob/master/docs/terraform.md).
 
 ### Generate a cluster
 
