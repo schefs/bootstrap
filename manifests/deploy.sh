@@ -13,5 +13,17 @@ until kubectl get servicemonitors --all-namespaces ; do date; sleep 1; echo ""; 
 
 kubectl create -f kube-prometheus/ 2>/dev/null || true  # This command sometimes may need to be done twice (to workaround a race condition).
 
+# Deploy heapster
+
+kubectl apply -f heapster-v1.11.0.yaml
+
+# Deploy kubernetes dashboard
+
+ kubectl apply -f dashboard-v1.10.1.yaml
+ 
+# Describe ingress resources
+INGRESS=$(kubectl get svc -n ingress-controller -o jsonpath='{.items[*].status.loadBalancer.ingress[?(@.hostname)].*}')
+echo -e "Ingress controller address is:\n\n$INGRESS"
+echo -e "grafana is available in:\n$INGRESS/grafana"
 
 #
