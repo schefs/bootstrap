@@ -113,5 +113,5 @@ spec:
           name: grafana-dashboard-statefulset
         name: grafana-dashboard-statefulset
       - configMap:
-          name: grafana-dashboard-dummy-exporter
-        name: grafana-dashboard-dummy-exporter
+          name: grafana-dashboard-k8s-dummy-exporter
+        name: grafana-dashboard-k8s-dummy-exporter
