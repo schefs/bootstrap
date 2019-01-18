@@ -2,7 +2,7 @@
 
 # Deploy ingress controller
 
-kubectl apply -f haproxy-ingress.yaml
+kubectl apply -f ingress-nginx-v1.6.0.yaml
 
 # Deploy kube-promethues: grafana, prometheus operator, alert manager cluster
 
@@ -20,10 +20,20 @@ kubectl apply -f heapster-v1.11.0.yaml
 # Deploy kubernetes dashboard
 
  kubectl apply -f dashboard-v1.10.1.yaml
+
+ # Deploy dummy exporter
+
+ kubectl apply -f ../dummy_exporter/dummy_exporter.yaml
  
-# Describe ingress resources
+# Describe ingress resources IP addres
 INGRESS=$(kubectl get svc -n ingress-controller -o jsonpath='{.items[*].status.loadBalancer.ingress[?(@.hostname)].*}')
 echo -e "Ingress controller address is:\n\n$INGRESS"
-echo -e "grafana is available in:\n$INGRESS/grafana"
+
+# Dashboard access
+DASHBOARD_PATH=/api/v1/namespaces/kube-system/services/https:kubernetes-dashboard:/proxy/
+SERVER=$(kubectl.exe config view -o=jsonpath='{.clusters[0].cluster.server}')
+echo -e "K8s Dashboard UI is availabe in:\n $SERVER$DASHBOARD_PATH"
+
+
 
 #
