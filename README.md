@@ -3,9 +3,13 @@
 **What are we going to bootstrap here ?**
 
 1 VPC with 6 subnets (3 public & 3 private in different AZ), with NAT GW for each AZ for redundancy for vm workload.
+
 Another 6 subnets for k8s (3 private for compute nodes and 3 infra for masters API, LB, bastion host etc..)
+
 k8s spread across all 3 AZ with 1 master in each zone and 3 compute nodes also one in each zone (all in private subnets).
+
 1 bastion host in your vpc for secure ssh access to the cluster.
+
 All k8s nodes including the master and bastion host will be created in a auto scaling group for dealing with recovery scenarios in case of servers fault.
 
 ## Installation requirements
@@ -89,7 +93,13 @@ I chose Calico for cluster networking for several reasons.
 
 ### Terraform for KOPS
 
-kops can spit out its intentions to terraform .tf file to use for initial deploy, but you should note that if you modify the Terraform files that kops spits out, it will override your changes with the configuration state defined by its own configs in the s3 bucket. In other terms, kops own state is the ultimate source of truth (as far as kops is concerned), and Terraform is a representation of that state for your convenience. Meaning that if you run a `kops edit cluster` and update your cluster without also updating your terraform files you will easily get out of sync, so for our specific use case without any automation enforcing you to always update the tf state. you can also create a third party resources (like load balancers for your application services) that only kops can destroy during a clusters teardown without the option built in to modify the tf state currently. I think this feature is not mature enough to use in our use case so I would stick to updating the cluster strait from kops for a strait forward approach for every cluster creation, update or teardown. You will need to add `--target=terraform \ --out=. \kops` to your cluster creation to tell kops to spit out its state to terraform. If you still want to do so you can read about it [here](https://github.com/kubernetes/kops/blob/master/docs/terraform.md).
+kops can spit out its intentions to terraform .tf file to use for initial deploy, but you should note that if you modify the Terraform files that kops spits out, it will override your changes with the configuration state defined by its own configs in the s3 bucket.
+
+In other terms, kops own state is the ultimate source of truth (as far as kops is concerned), and Terraform is a representation of that state for your convenience. Meaning that if you run a `kops edit cluster` and update your cluster without also updating your terraform files you will easily get out of sync, so for our specific use case without any automation, you are enforced to always update the tf state manually.
+
+You can also create a third party resources (like load balancers for your application services) that only kops can destroy during a clusters teardown without the option built in to modify the tf state currently.
+
+For those reasons I think this feature is not mature enough to use in our use case so I would stick to updating the cluster using from kops for a strait forward approach for every cluster creation, update or teardown. To use this feature you will need to add `--target=terraform \ --out=. \kops` to your cluster creation to tell kops to spit out its state to terraform. If you still want to do so you can read about it [here](https://github.com/kubernetes/kops/blob/master/docs/terraform.md).
 
 ### Generate a cluster
 
@@ -99,43 +109,24 @@ To initiate cluster state to s3 bucket
 
 if you are pleased with the output of the resources going to be created you can then run `kops update cluster --yes` to actually create those resources.
 
-
-
-                        #--subnets $(terraform output private_subnets|tr -d '\n') \
-                        #export SUBNET_IDS=$(terraform output private_subnets|tr -d '\n')
-
 ### Add Calico Cross-Subnet mode
 
 To enable this mode in a cluster, with Calico as the CNI and Network Policy provider, you must edit the cluster after the previous creation. This will help you to boost networking performance in a larger scale cluster, but its defiantly not obligatory.
 
 `kops edit cluster`  will show you a block like this:
 
-```
-  networking:
-    calico: {}
-```
+    networking:
+      calico: {}
 
 You will need to change that block, and add an additional field, to look like this:
 
-```
-  networking:
-    calico:
-      crossSubnet: true
-```
+    networking:
+      calico:
+        crossSubnet: true
+
 Then you will need to run:
-    
+
     $ kops update cluster --yes
-
-<!-- ### fdhfghddfgfg
-
-    $ export KOPS_STATE_STORE=s3://$(terraform output kops_s3_state_bucket)
-    $ export KOPS_CLUSTER_NAME=$(terraform output dns_zone_name)
-    $ kops get cluster -o yaml > cluster-desired-config.yaml
-    $ 
-
-### Deploy KOPS from template yaml
-
-kops toolbox dump --state s3://$(terraform output kops_s3_state_bucket) --name $(terraform output dns_zone_name) -->
 
 ### Initiate and create cluster resources
 
@@ -149,7 +140,7 @@ kops toolbox dump --state s3://$(terraform output kops_s3_state_bucket) --name $
 Your local kubectl install is now configured with you new cluster. run `kubectl get nodes` to make sure everything is up and running.
 
 Check your aws console for your newly created ELB address so you can SSH into the bastion. from here you can ssh into any node in the private subnets (you are probably dont need to do that anyway).
-    ssh -A -i ~/.ssh/id_rsa admin@<bastion-ELB-address>
+    ssh -A -i ~/.ssh/id_rsa admin@\<bastion-ELB-address\>
 
 ### Deploy manifests to the cluster
 
