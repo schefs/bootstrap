@@ -142,6 +142,7 @@ Then you will need to run:
 Your local kubectl install is now configured with you new cluster. run `kubectl get nodes` to make sure everything is up and running.
 
 Check your aws console for your newly created ELB address so you can SSH into the bastion. from here you can ssh into any node in the private subnets (you are probably dont need to do that anyway).
+
     ssh -A -i ~/.ssh/id_rsa admin@<bastion-ELB-address\>
 
 ### Deploy manifests to the cluster
