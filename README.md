@@ -184,11 +184,9 @@ Then after you already see the dashboards ui requesting the token:
 - Username: admin
 - Password: `$ kops get secrets --type secret admin -oplaintext`
 
-this is done with security in mind preventing admin privileges strait of from authentication stage to the api server and not the dashboard.
+this is done with security in mind preventing admin privileges strait of from authentication stage to the api server and not the dashboard itself.
 
 ## Teardown
 
-    $ kops delete cluster --name schef.dev.k8s --state s3://kops-state-testing-dev --yes
+    $ kops delete cluster --yes
     $ terraform destroy
-
-
