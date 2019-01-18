@@ -12,6 +12,8 @@ k8s spread across all 3 AZ with 1 master in each zone and 3 compute nodes spread
 
 *All k8s nodes including the master and bastion host will be created in a auto scaling group for dealing with recovery scenarios in case of servers fault.
 
+We are going to run a dummy-exporter, Nginx ingress controller, k8s-dashboard, Heapster, Kube-state-metrics, node exporters, Prometheus-operator, Grafana, alert manager cluster.
+
 ## Installation requirements
 
 - Terraform
@@ -22,15 +24,15 @@ k8s spread across all 3 AZ with 1 master in each zone and 3 compute nodes spread
 
 - create an AWS IAM User with Programmatic Access and assign following permissions:
 
-    AmazonEC2FullAccess
-    AmazonRoute53FullAccess
-    AmazonS3FullAccess
-    IAMFullAccess
-    AmazonVPCFullAccess
+      AmazonEC2FullAccess
+      AmazonRoute53FullAccess
+      AmazonS3FullAccess
+      IAMFullAccess
+      AmazonVPCFullAccess
 
 - Setup aws key in a credential file.
 
-*You will need to raise the default aws account EIP limit from 5 to 6 at least
+*You will need to raise the default aws account EIP limit from 5 to 7 at least
 
 - Setup your variables in terraform.tfvars.
 
