@@ -166,8 +166,20 @@ Check your aws console for your newly created ELB address so you can SSH into th
 ### deploy manifests to the cluster
 
     $ cd ../manifests
-    $ 
+    $ ./deploy.sh
 
+### accessing the kubernetes dashboard
+
+The login credentials are:
+
+- Username: admin
+- Password: get by running 'kops get secrets kube --type secret -oplaintext'
+
+### note- explain how to proxy services ui to user
+
+kubectl port-forward -n monitoring service/grafana 3000
+kubectl port-forward -n monitoring service/prometheus-k8s 9090
+kubectl port-forward -n monitoring service/alertmanager-main 9093
 
 
 
