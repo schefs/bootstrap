@@ -69,6 +69,9 @@ spec:
         - mountPath: /grafana-dashboard-definitions/0/ingress
           name: grafana-dashboard-k8s-ingress-rsrc-use
           readOnly: false
+        - mountPath: /grafana-dashboard-definitions/0/dummy-exporter
+          name: grafana-dashboard-k8s-dummy-exporter
+          readOnly: false
       securityContext:
         runAsNonRoot: true
         runAsUser: 65534
@@ -109,3 +112,6 @@ spec:
       - configMap:
           name: grafana-dashboard-statefulset
         name: grafana-dashboard-statefulset
+      - configMap:
+          name: grafana-dashboard-dummy-exporter
+        name: grafana-dashboard-dummy-exporter
