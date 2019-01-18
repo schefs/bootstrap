@@ -15,4 +15,4 @@ This is a prometheus fake exporter generating fake metrics just for educational 
 
 ## kubernetes deployment
 
-    $ kubectl apply -f dummy_exporter_deployment.yaml
+    $ kubectl apply -f dummy_exporter.yaml
