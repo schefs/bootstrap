@@ -6,7 +6,7 @@
 Another 6 subnets for k8s (3 private for compute nodes and 3 infra for masters API, LB, bastion host etc..)
 k8s spread across all 3 AZ with 1 master in each zone and 3 compute nodes also one in each zone (all in private subnets).
 1 bastion host in your vpc for secure ssh access to the cluster.
-All k8s nodes including the master will be created in a auto scaling group for dealing with recovery scenarios in case of servers fault.
+All k8s nodes including the master and bastion host will be created in a auto scaling group for dealing with recovery scenarios in case of servers fault.
 
 ## Installation requirements
 
@@ -73,7 +73,6 @@ generate key-pair for kops. it will be saved by deafult in ~/.ssh and kops will 
 
     $ssh-keygen
 
-
 ### Lets talk about networking
 
 We are going to tells Kops that we want to use a private network topology. Our Kubernetes instances will live in private subnets in each zone.
@@ -94,39 +93,26 @@ kops can spit out its intentions to terraform .tf file to use for initial deploy
 
 ### Generate a cluster
 
-*You can probably skip this part and go head and use the pre created one.
+To initiate cluster state to s3 bucket
 
-    $ kops create cluster \
-     --cloud=aws \
-     --state=s3://$(terraform output kops_s3_state_bucket) \
-     --node-count 3 \
-     --zones $(terraform.exe output AZ |tr -d '\n') \
-     --master-zones $(terraform.exe output AZ |tr -d '\n') \
-     --dns-zone=$(terraform output dns_zone_id) \
-     --vpc=$(terraform output vpc_id) \
-     --dns private \
-     --node-size t2.small \
-     --master-size t2.micro \
-     --topology private \
-     --networking calico \
-     --bastion \
-     --ssh-public-key ~/.ssh/id_rsa.pub \
-     --cloud-labels $(terraform output common_tags|tr '\n' ','|sed 's/ //g'|sed 's/.$//') \
-     --name $(terraform output dns_zone_name)
+    $ deploy-kops.sh 
+
+if you are pleased with the output of the resources going to be created you can then run `kops update cluster --yes` to actually create those resources.
+
+
 
                         #--subnets $(terraform output private_subnets|tr -d '\n') \
                         #export SUBNET_IDS=$(terraform output private_subnets|tr -d '\n')
 
 ### Add Calico Cross-Subnet mode
 
-To enable this mode in a cluster, with Calico as the CNI and Network Policy provider, you must edit the cluster after the previous `kops create ...` command. This will help you to boost networking performance in a larger scale cluster, but its defiantly not obligatory.
+To enable this mode in a cluster, with Calico as the CNI and Network Policy provider, you must edit the cluster after the previous creation. This will help you to boost networking performance in a larger scale cluster, but its defiantly not obligatory.
 
 `kops edit cluster`  will show you a block like this:
 
 ```
   networking:
-    calico:
-      majorVersion: v3
+    calico: {}
 ```
 
 You will need to change that block, and add an additional field, to look like this:
@@ -134,9 +120,11 @@ You will need to change that block, and add an additional field, to look like th
 ```
   networking:
     calico:
-      majorVersion: v3
       crossSubnet: true
 ```
+Then you will need to run:
+    
+    $ kops update cluster --yes
 
 <!-- ### fdhfghddfgfg
 
@@ -161,27 +149,42 @@ kops toolbox dump --state s3://$(terraform output kops_s3_state_bucket) --name $
 Your local kubectl install is now configured with you new cluster. run `kubectl get nodes` to make sure everything is up and running.
 
 Check your aws console for your newly created ELB address so you can SSH into the bastion. from here you can ssh into any node in the private subnets (you are probably dont need to do that anyway).
-    ssh -A admin@<bastion-ELB-address>
+    ssh -A -i ~/.ssh/id_rsa admin@<bastion-ELB-address>
 
-### deploy manifests to the cluster
+### Deploy manifests to the cluster
 
     $ cd ../manifests
-    $ ./deploy.sh
+    $ ./deploy-k8s-resources.sh
 
-### accessing the kubernetes dashboard
+### Accessing backed services
+
+Common used resources are accessible through ingress/LB/API proxy.
+
+To get their address run `./describe-fe.sh`
+
+You can proxy to other Back-end services through the k8s api server for secure access when needed.
+they will be available in "http://localhost:\<service-port\>"
+
+    $ kubectl port-forward -n monitoring service/prometheus-k8s 9090
+    $ kubectl port-forward -n monitoring service/alertmanager-main 9093
+
+Note: Grafana user and password is admin:admin by default
+
+### Accessing the kubernetes dashboard
 
 The login credentials are:
 
+First for the authentication with the api server itself you will need to use:
+
 - Username: admin
-- Password: get by running 'kops get secrets kube --type secret -oplaintext'
+- Password: `$ kops get secrets kube --type secret -oplaintext`
 
-### note- explain how to proxy services ui to user
+Then after you already see the dashboards ui requesting the token:
 
-kubectl port-forward -n monitoring service/grafana 3000
-kubectl port-forward -n monitoring service/prometheus-k8s 9090
-kubectl port-forward -n monitoring service/alertmanager-main 9093
+- Username: admin
+- Password: `$ kops get secrets --type secret admin -oplaintext`
 
-
+this is done with security in mind preventing admin privileges strait of from authentication stage to the api server and not the dashboard.
 
 ## Teardown
 
