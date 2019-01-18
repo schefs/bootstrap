@@ -21,7 +21,8 @@ spec:
       - name: dummy-exporter
         image: schef/dummy_exporter:stable
         ports:
-        - containerPort: 65433
+        - name: web
+          containerPort: 65433
 
 ---
 
@@ -30,12 +31,15 @@ apiVersion: v1
 metadata:
   name: dummy-exporter
   namespace: default
+  labels:
+    app: dummy-exporter
 spec:
   selector:
     app: dummy-exporter
   ports:
-  - protocol: TCP
-    port: 80
+  - name: web
+    protocol: TCP
+    port: 65433
     targetPort: 65433
 
 ---
@@ -55,5 +59,22 @@ spec:
       - path: /dummy-exporter
         backend:
           serviceName: dummy-exporter
-          servicePort: 80
+          servicePort: 65433
 
+---
+
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: dummy-exporter
+  namespace: default
+spec:
+  endpoints:
+  - interval: 15s
+    port: web
+  namespaceSelector:
+    matchNames:
+    - default
+  selector:
+    matchLabels:
+      app: dummy-exporter
