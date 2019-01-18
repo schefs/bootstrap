@@ -6,11 +6,11 @@
 
 Another 6 subnets for k8s (3 private for compute nodes and 3 infra for masters API, LB, bastion host etc..)
 
-k8s spread across all 3 AZ with 1 master in each zone and 3 compute nodes also one in each zone (all in private subnets).
+k8s spread across all 3 AZ with 1 master in each zone and 3 compute nodes spread across the region (all in private subnets).
 
-1 bastion host in your vpc for secure ssh access to the cluster.
+1 bastion host in your vpc for secure ssh access to the environment.
 
-All k8s nodes including the master and bastion host will be created in a auto scaling group for dealing with recovery scenarios in case of servers fault.
+*All k8s nodes including the master and bastion host will be created in a auto scaling group for dealing with recovery scenarios in case of servers fault.
 
 ## Installation requirements
 
