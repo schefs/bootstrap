@@ -185,7 +185,7 @@ Note: Grafana user and password is admin:admin by default
 
 The login credentials are:
 
-First for the authentication with the api server itself you will need to use:
+First for the authentication with the api server itself you will need to use (this should be used on all api authentication like in Kibana):
 
 - Username: admin
 - Password: `$ kops get secrets kube --type secret -oplaintext`
