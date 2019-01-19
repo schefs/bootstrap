@@ -12,3 +12,5 @@ vpc_cidr    	     = "10.0.0.0/16"
 vpc_private_subnets  = ["10.0.200.0/24", "10.0.201.0/24", "10.0.202.0/24"]
 vpc_public_subnets   = ["10.0.150.0/24", "10.0.151.0/24", "10.0.152.0/24"]
 kubernetes_cluster_name = "schef.dev.k8s"
+es_vm_size = "t2.small"
+ssh_key_pub_location = "~/.ssh/id_rsa.pub"
