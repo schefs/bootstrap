@@ -12,6 +12,9 @@ k8s spread across all 3 AZ with 1 master in each zone and 3 compute nodes spread
 
 *All k8s nodes including the master and bastion host will be created in a auto scaling group for dealing with recovery scenarios in case of servers fault.
 
+We`ll use route 53 internal hosted dns zone without a real domain.
+If you want to use a real domain, that will work out great for you also, especially with k8s ingress sub-domain HOST proxy redirect will help you to save money on LoadBalancer and expose internal services with ease.
+
 We are going to run a dummy-exporter, Nginx ingress controller, k8s-dashboard, Heapster, Kube-state-metrics, node exporters, Prometheus-operator, Grafana, alert manager cluster.
 
 ## Installation requirements
@@ -46,6 +49,16 @@ Usage in main.tf:
 
 *You can use any other way for setting the credentials as recommended by Terraform.
 
+## SSH
+
+For security, all master/worker nodes are in a private subnet and not exposed to the Internet, as well as other vms in the project. we'll instantiate a bastion host as the sole entry point into the environment via SSH. k8s cluster is configured to enable RBAC as its authorization mode. Its control plane/API requires authentication via client certificate based authentication (will be available automatically with deploy automation in your ~/.kube/config).
+You will need to create a ssh key pair to access the bastion host if you want to be able to ssh into the nodes.
+generate key-pair for kops and terraform. it will be saved by deafult in ~/.ssh and kops will setup the .ssh/id_rsa.pub in all created instances.
+
+    $ssh-keygen
+
+if you plan to use a different key for terraform make sure you update terraform.tfvars file with the location of that key.
+
 Then you can run the following:
 
     $ cd ./terraform
@@ -70,14 +83,11 @@ Note that executing this will create resources which can cost money (VPC, AWS El
 | dns\_zone\_name | Name of the route53 dns zone |
 | common\_tags | Map of common tags used across all aws resources |
 | AZ | List of AZs |
+| es_address | Elastic Search nodes ip address |
+| es_dns | Elastic Search internal DNS address |
+| es_id | Elastic Search instance ID |
 
 ## Kubernetes
-
-For security, all master/worker nodes are in a private subnet and not exposed to the Internet. Also instantiate a bastion host as the sole entry point into the cluster via SSH, and the cluster is configured to enable RBAC as its authorization mode. Its control plane/API requires authentication via client certificate based authentication (will be available automatically with deploy automation in your ~/.kube/config).
-You will need to create a ssh key pair to access the bastion host if you want to be able to ssh into the nodes.
-generate key-pair for kops. it will be saved by deafult in ~/.ssh and kops will setup the .ssh/id_rsa.pub in all created instances.
-
-    $ssh-keygen
 
 ### Lets talk about networking
 
@@ -107,7 +117,7 @@ For those reasons I think this feature is not mature enough to use in our use ca
 
 To initiate cluster state to s3 bucket
 
-    $ deploy-kops.sh 
+    $ deploy-kops.sh
 
 if you are pleased with the output of the resources going to be created you can then run `kops update cluster --yes` to actually create those resources.
 
@@ -143,7 +153,14 @@ Your local kubectl install is now configured with you new cluster. run `kubectl 
 
 Check your aws console for your newly created ELB address so you can SSH into the bastion. from here you can ssh into any node in the private subnets (you are probably dont need to do that anyway).
 
-    ssh -A -i ~/.ssh/id_rsa admin@<bastion-ELB-address\>
+    $ eval "$(ssh-agent)"
+    $ ssh-add ~/.ssh/id_rsa
+    $ ssh -A -i ~/.ssh/id_rsa admin@<bastion-ELB-address\>
+
+From this host you can ssh to any host you desire in you vpc
+
+    $ ssh admin@10.0.0.1  # for k8s hosts use admin user
+    $ ssh ubuntu@10.0.0.2 # for ubuntu vms use ubuntu user
 
 ### Deploy manifests to the cluster
 
