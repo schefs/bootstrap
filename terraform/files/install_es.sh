@@ -7,6 +7,9 @@ sudo apt-get update
 sudo apt-get install openjdk-8-jre -y
 sudo apt-get install elasticsearch
 
+sudo echo "network.host: 0.0.0.0" >> /etc/elasticsearch/elasticsearch.yml
+
+
 sudo /bin/systemctl daemon-reload
 sudo /bin/systemctl enable elasticsearch.service
 sudo service elasticsearch start
