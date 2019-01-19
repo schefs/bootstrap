@@ -48,6 +48,18 @@ output "kops_s3_state_bucket" {
    description = "Name of the route53 dns zone"
    value =  "${var.kubernetes_cluster_name}"
  }
+  output "es_dns" {
+   description = "Elastic Search node DNS address"
+   value = "${aws_instance.elastic_search.private_dns}"
+ }
+  output "es_address" {
+   description = "Elastic Search node IP address"
+   value = "${aws_instance.elastic_search.private_ip}"
+  }
+  output "es_id" {
+   description = "Elastic Search node aws instance id"
+   value = "${aws_instance.elastic_search.id}"
+  }
  output "common_tags" {
    description = "common tags used across all aws resources"
    value = "${var.common_tags}"
