@@ -13,7 +13,7 @@ echo -e "\e[0mGrafana UI is available in :\n\e[32mhttp://$GRAFANA:3000"
 
  # Kibana service
 KIBANA_PATH=/api/v1/namespaces/monitoring/services/kibana-logging/proxy/app/kibana
-echo -e "\e[0mKibana UI is availabe in:\n\e[32m$SERVER$DASHBOARD_PATH"
+echo -e "\e[0mKibana UI is availabe in:\n\e[32m$SERVER$KIBANA_PATH"
 
 # Dashboard access
 DASHBOARD_PATH=/api/v1/namespaces/kube-system/services/https:kubernetes-dashboard:/proxy/
