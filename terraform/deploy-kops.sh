@@ -2,6 +2,7 @@
 
 export KOPS_STATE_STORE=s3://$(terraform output kops_s3_state_bucket)
 export KOPS_CLUSTER_NAME=$(terraform output dns_zone_name)
+export ES_IP_ADDRESS=$(terraform output es_address)
 
 kops create cluster \
      --cloud=aws \
@@ -12,7 +13,7 @@ kops create cluster \
      --dns-zone=$(terraform output dns_zone_id) \
      --vpc=$(terraform output vpc_id) \
      --dns private \
-     --node-size t2.small \
+     --node-size t2.medium \
      --master-size t2.micro \
      --topology private \
      --networking calico \
