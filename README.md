@@ -113,7 +113,7 @@ You can also create a third party resources (like load balancers for your applic
 
 For those reasons I think this feature is not mature enough to use in our use case so I would stick to updating the cluster using from kops for a strait forward approach for every cluster creation, update or teardown. To use this feature you will need to add `--target=terraform \ --out=. \kops` to your cluster creation to tell kops to spit out its state to terraform. If you still want to do so you can read about it [here](https://github.com/kubernetes/kops/blob/master/docs/terraform.md).
 
-### Generate a cluster
+### Spin up a cluster
 
 To initiate cluster state to s3 bucket
 
@@ -139,13 +139,6 @@ You will need to change that block, and add an additional field, to look like th
 Then you will need to run:
 
     $ kops update cluster --yes
-
-### Initiate and create cluster resources
-
-    $ export KOPS_STATE_STORE=s3://$(terraform output kops_s3_state_bucket)
-    $ export KOPS_CLUSTER_NAME=$(terraform output dns_zone_name)
-    $ kops update cluster --yes
-    # kops update cluster --state s3://$(terraform output kops_s3_state_bucket --yes
 
 ### Accessing the cluster
 
