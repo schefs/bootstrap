@@ -15,13 +15,23 @@ k8s spread across all 3 AZ with 1 master in each zone and 3 compute nodes spread
 We`ll use route 53 internal hosted dns zone without a real domain.
 If you want to use a real domain, that will work out great for you also, especially with k8s ingress sub-domain HOST proxy redirect will help you to save money on LoadBalancer and expose internal services with ease.
 
-We are going to run a dummy-exporter, Nginx ingress controller, k8s-dashboard, Heapster, Kube-state-metrics, node exporters, Prometheus-operator, Grafana, alert manager cluster, fluentd daemonset, kibana and elastic search (on vm).
+We are going to run a dummy-exporter, Nginx ingress controller, k8s-dashboard, Heapster, Kube-state-metrics, node exporters, Prometheus-operator, Grafana, alert manager cluster, fluentd daemonset, kibana and elastic search (on separate vm).
 
 ## Installation requirements
 
 - Terraform
 - Kubectl
 - KOPS
+
+### Access
+
+For security, all master/worker nodes are in a private subnet and not exposed to the Internet, as well as other vms in the project. we'll instantiate a bastion host as the sole entry point into the environment via SSH. k8s cluster is configured to enable RBAC as its authorization mode. Its control plane/API requires authentication via client certificate based authentication (will be available automatically with deploy automation in your ~/.kube/config).
+You will need to create a ssh key pair to access the bastion host if you want to be able to ssh into the nodes.
+generate key-pair for kops and terraform. it will be saved by default in ~/.ssh and kops will setup the .ssh/id_rsa.pub in all created instances.
+
+    $ssh-keygen
+
+if you plan to use a different key for terraform make sure you update terraform.tfvars file with the location of that key.
 
 ## Lets start with terraform
 
@@ -35,29 +45,23 @@ We are going to run a dummy-exporter, Nginx ingress controller, k8s-dashboard, H
 
 - Setup aws key in a credential file.
 
-*You will need to raise the default aws account EIP limit from 5 to 7 at least
+*You will need to raise the default aws account EIP limit from 5 to 8 at least
 
 - Setup your variables in terraform.tfvars.
 
-Usage in main.tf:
+- Usage in main.tf:
 
-    provider "aws" {
-        region = "${var.region}"
-        profile = "${var.aws_profile}"
-        shared_credentials_file = "/Users/tf_user/.aws/creds" # <---- used to set custom credentials file path.
-    }
+      provider "aws" {
+          region = "${var.region}"
+          profile = "${var.aws_profile}"
+          shared_credentials_file = "~/.aws/creds" # <---- used to set custom credentials file path.
+      }
 
 *You can use any other way for setting the credentials as recommended by Terraform.
 
-## SSH
+*Note: From this point in the guide you will create resources which cost money (VPC, AWS Elastic IP, LB, EC2 instances etc...)
 
-For security, all master/worker nodes are in a private subnet and not exposed to the Internet, as well as other vms in the project. we'll instantiate a bastion host as the sole entry point into the environment via SSH. k8s cluster is configured to enable RBAC as its authorization mode. Its control plane/API requires authentication via client certificate based authentication (will be available automatically with deploy automation in your ~/.kube/config).
-You will need to create a ssh key pair to access the bastion host if you want to be able to ssh into the nodes.
-generate key-pair for kops and terraform. it will be saved by deafult in ~/.ssh and kops will setup the .ssh/id_rsa.pub in all created instances.
-
-    $ssh-keygen
-
-if you plan to use a different key for terraform make sure you update terraform.tfvars file with the location of that key.
+Don't forget to execute the [Teardown](#Teardown) section in this guide when you don't need these resources anymore.
 
 Then you can run the following:
 
@@ -66,8 +70,6 @@ Then you can run the following:
     $ terraform init
     $ terraform plan
     $ terraform apply
-
-Note that executing this will create resources which can cost money (VPC, AWS Elastic IP, for example). Don't forget to run `terraform destroy` when you don't need these resources.
 
 ### Outputs
 
@@ -89,6 +91,16 @@ Note that executing this will create resources which can cost money (VPC, AWS El
 
 ## Kubernetes
 
+### Terraform for KOPS
+
+kops can spit out its intentions to terraform .tf file to use for initial deploy, but you should note that if you modify the Terraform files that kops spits out, it will override your changes with the configuration state defined by its own configs in the s3 bucket.
+
+In other terms, kops own state is the ultimate source of truth (as far as kops is concerned), and Terraform is a representation of that state for your convenience. Meaning that if you run a `kops edit cluster` and update your cluster without also updating your terraform files you will easily get out of sync, so for our specific use case without any automation, you are enforced to always update the tf state manually.
+
+You can also create a third party resources (like load balancers for your application services) that only kops can destroy during a clusters teardown without the option built in to modify the tf state currently.
+
+For those reasons I think this feature is not mature enough to use in our use case so I would stick to updating the cluster using from kops for a strait forward approach for every cluster creation, update or teardown. To use this feature you will need to add `--target=terraform \ --out=. \kops` to your cluster creation to tell kops to spit out its state to terraform. If you still want to do so you can read about it [here](https://github.com/kubernetes/kops/blob/master/docs/terraform.md).
+
 ### Lets talk about networking
 
 We are going to tells Kops that we want to use a private network topology. Our Kubernetes instances will live in private subnets in each zone.
@@ -102,16 +114,6 @@ I chose Calico for cluster networking for several reasons.
 - BGP route reflectors - Calico by default, routes between nodes within a subnet are distributed using a full node-to-node BGP mesh. Each node automatically sets up a BGP peering with every other node within the same L2 network. This full node-to-node mesh per L2 network has its scaling challenges for larger scale deployments. BGP route reflectors can be used as a replacement to a full mesh, and is useful for scaling up a cluster. Performance benefits are mostly relevant to large ~50-100+ nodes clusters, so if you are planning to go this direction you should Read more here: [BGP route reflectors](https://docs.projectcalico.org/v3.4/usage/routereflector) (The setup of BGP route reflectors is currently out of the scope of kops and needs to be implemented manually).
 - Compared to other networking solutions calico is considered light with a small memory&cpu footprint on the nodes compared to its rivals which is a great plus for my use case.
 - Calico provides fine-grained network security policy for individual containers. can be useful for a user specific ingress/egress rules natively implemented in kubernetes manifest and not as a third party resource.
-
-### Terraform for KOPS
-
-kops can spit out its intentions to terraform .tf file to use for initial deploy, but you should note that if you modify the Terraform files that kops spits out, it will override your changes with the configuration state defined by its own configs in the s3 bucket.
-
-In other terms, kops own state is the ultimate source of truth (as far as kops is concerned), and Terraform is a representation of that state for your convenience. Meaning that if you run a `kops edit cluster` and update your cluster without also updating your terraform files you will easily get out of sync, so for our specific use case without any automation, you are enforced to always update the tf state manually.
-
-You can also create a third party resources (like load balancers for your application services) that only kops can destroy during a clusters teardown without the option built in to modify the tf state currently.
-
-For those reasons I think this feature is not mature enough to use in our use case so I would stick to updating the cluster using from kops for a strait forward approach for every cluster creation, update or teardown. To use this feature you will need to add `--target=terraform \ --out=. \kops` to your cluster creation to tell kops to spit out its state to terraform. If you still want to do so you can read about it [here](https://github.com/kubernetes/kops/blob/master/docs/terraform.md).
 
 ### Spin up a cluster
 
