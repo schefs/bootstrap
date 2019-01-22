@@ -119,7 +119,7 @@ I chose Calico for cluster networking for several reasons.
 
 To initiate cluster state to s3 bucket
 
-    $ deploy-kops.sh
+    $ source ./deploy-kops.sh
 
 if you are pleased with the output of the resources going to be created you can then run `kops update cluster --yes` to actually create those resources.
 
