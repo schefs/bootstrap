@@ -22,6 +22,7 @@ We are going to run a dummy-exporter, Nginx ingress controller, k8s-dashboard, H
 - Terraform
 - Kubectl
 - KOPS
+- Helm client
 
 ### Access
 
