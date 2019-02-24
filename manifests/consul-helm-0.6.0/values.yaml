@@ -27,7 +27,7 @@ global:
   # as. This shouldn't be changed once the Consul cluster is up and running
   # since Consul doesn't support an automatic way to change this value
   # currently: https://github.com/hashicorp/consul/issues/1858
-  datacenter: dc1
+  datacenter: us-east-2
 
 # Server, when enabled, configures a server cluster to run. This should
 # be disabled if you plan on connecting to a Consul cluster external to
@@ -160,7 +160,7 @@ ui:
   # balancer (for supported K8S installations) to access the UI.
   service:
     enabled: true
-    type: null
+    type: LoadBalancer
 
 # syncCatalog will run the catalog sync process to sync K8S with Consul
 # services. This can run bidirectional (default) or unidirectionally (Consul
