@@ -24,4 +24,6 @@ echo -e "\e[0mK8s Dashboard UI is availabe in:\n\e[32m$SERVER$DASHBOARD_PATH"
  CONSUL=$(kubectl get svc -n consul $CONSUL_SVC_NAME -o jsonpath='{.status.loadBalancer.ingress[?(@.hostname)].*}')
  echo -e "\e[0mK8s Consul UI is availabe in:\n\e[32mhttp://$consul"
 
+ # WP
+
 
