@@ -48,7 +48,7 @@ wordpressLastName: LastName
 ## Blog name
 ## ref: https://github.com/bitnami/bitnami-docker-wordpress#environment-variables
 ##
-wordpressBlogName: schef's Blog! using WP
+wordpressBlogName: schef's demo Blog! Lets auto-scale this thing!
 
 ## Table prefix
 ## ref: https://github.com/bitnami/bitnami-docker-wordpress#environment-variables
@@ -135,7 +135,7 @@ mariadb:
       ##   GKE, AWS & OpenStack)
       ##
       # storageClass: "-"
-      storageClass: nfs 
+      # storageClass: nfs 
       accessMode: ReadWriteOnce
       size: 8Gi
 
@@ -267,8 +267,8 @@ persistence:
 ##
 resources:
   requests:
-    memory: 512Mi
-    cpu: 300m
+    memory: 150Mi
+    cpu: 100m
 
 ## Node labels for pod assignment
 ## Ref: https://kubernetes.io/docs/user-guide/node-selection/
