@@ -11,10 +11,6 @@ image:
   registry: docker.io
   repository: bitnami/wordpress
   tag: 5.1.0
-  ## Specify a imagePullPolicy
-  ## Defaults to 'Always' if image tag is 'latest', else set to 'IfNotPresent'
-  ## ref: http://kubernetes.io/docs/user-guide/images/#pre-pulling-images
-  ##
   pullPolicy: IfNotPresent
   ## Optionally specify an array of imagePullSecrets.
   ## Secrets must be manually created in the namespace.
@@ -52,20 +48,19 @@ wordpressLastName: LastName
 ## Blog name
 ## ref: https://github.com/bitnami/bitnami-docker-wordpress#environment-variables
 ##
-wordpressBlogName: User's Blog!
+wordpressBlogName: schef's Blog! using WP
 
 ## Table prefix
 ## ref: https://github.com/bitnami/bitnami-docker-wordpress#environment-variables
 ##
 wordpressTablePrefix: wp_
 
-## Set to `false` to allow the container to be started with blank passwords
+## Set to `yes` to allow the container to be started with blank passwords
 ## ref: https://github.com/bitnami/bitnami-docker-wordpress#environment-variables
-allowEmptyPassword: true
+allowEmptyPassword: "yes"
 
 ## Set Apache allowOverride to None
-allowOverrideNone: "no"
-
+allowOverrideNone: "yes"
 # ConfigMap with custom wordpress-htaccess.conf file (requires allowOverrideNone to true)
 customHTAccessCM:
 
@@ -79,7 +74,7 @@ customHTAccessCM:
 # smtpUsername:
 # smtpProtocol:
 
-replicaCount: 1
+replicaCount: 3
 
 externalDatabase:
 ## All of these values are only used when mariadb.enabled is set to false
@@ -162,11 +157,12 @@ service:
   ## Enable client source IP preservation
   ## ref http://kubernetes.io/docs/tasks/access-application-cluster/create-external-load-balancer/#preserving-the-client-source-ip
   ##
-  externalTrafficPolicy: Cluster
+  externalTrafficPolicy: Local
   annotations: {}
 
 ## Allow health checks to be pointed at the https port
 healthcheckHttps: false
+
 
 ## Configure extra options for liveness and readiness probes
 ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/#configure-probes)
@@ -256,7 +252,12 @@ persistence:
   ## If you want to reuse an existing claim, you can pass the name of the PVC using
   ## the existingClaim variable
   # existingClaim: your-claim
-  accessMode: ReadWriteOnce
+  ##
+  ## To use the /admin portal and to ensure you can scale wordpress you need to provide a
+  ## ReadWriteMany PVC, if you dont have a provisioner for this type of storage
+  ## We recommend that you install the nfs provisioner and map it to a RWO volume
+  ## helm install stable/nfs-server-provisioner --set persistence.enabled=true,persistence.size=10Gi
+  accessMode: ReadWriteMany
   size: 10Gi
 
 ## Configure resource requests and limits
@@ -282,14 +283,10 @@ tolerations: []
 ##
 affinity: {}
 
-## Pod annotations
-## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
-##
-podAnnotations: {}
 ## Prometheus Exporter / Metrics
 ##
 metrics:
-  enabled: false
+  enabled: true
   image:
     registry: docker.io
     repository: lusotycoon/apache-exporter
@@ -301,11 +298,11 @@ metrics:
     ##
     # pullSecrets:
     #   - myRegistrKeySecretName
-  ## Metrics exporter pod Annotation and Labels
+     ## Metrics exporter pod Annotation and Labels
   podAnnotations:
     prometheus.io/scrape: "true"
     prometheus.io/port: "9117"
-    ## Metrics exporter resource requests and limits
-    ## ref: http://kubernetes.io/docs/user-guide/compute-resources/
-    ##
+  ## Metrics exporter resource requests and limits
+  ## ref: http://kubernetes.io/docs/user-guide/compute-resources/
+  ##
   # resources: {}
