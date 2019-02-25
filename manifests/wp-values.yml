@@ -135,6 +135,7 @@ mariadb:
       ##   GKE, AWS & OpenStack)
       ##
       # storageClass: "-"
+      storageClass: nfs 
       accessMode: ReadWriteOnce
       size: 8Gi
 
@@ -248,6 +249,7 @@ persistence:
   ##   GKE, AWS & OpenStack)
   ##
   # storageClass: "-"
+  storageClass: nfs 
   ##
   ## If you want to reuse an existing claim, you can pass the name of the PVC using
   ## the existingClaim variable
