@@ -14,7 +14,7 @@ kops create cluster \
      --vpc=$(terraform output vpc_id) \
      --dns private \
      --node-size t2.medium \
-     --master-size t2.micro \
+     --master-size t2.medium \
      --topology private \
      --networking calico \
      --bastion \
