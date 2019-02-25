@@ -1,6 +1,7 @@
 #!/bin/bash
 
-SERVER=$(kubectl.exe config view -o=jsonpath='{.clusters[0].cluster.server}')
+#SERVER=$(kubectl config view -o=jsonpath='{.clusters[0].cluster.server}')
+SERVER=$(kubectl cluster-info |grep -Eo '(http|https)://[^/"]+'|head -1)
 
 # Describe ingress resources IP addres
 INGRESS=$(kubectl get svc -n kube-ingress -o jsonpath='{.items[*].status.loadBalancer.ingress[?(@.hostname)].*}')
@@ -20,10 +21,16 @@ DASHBOARD_PATH=/api/v1/namespaces/kube-system/services/https:kubernetes-dashboar
 echo -e "\e[0mK8s Dashboard UI is availabe in:\n\e[32m$SERVER$DASHBOARD_PATH"
 
 # Consul UI 
- CONSUL_SVC_NAME =  $(kubectl get svc -n consul -o NAME | grep consul-ui)
+ CONSUL_SVC_NAME=$(kubectl get svc -n consul -o custom-columns=NAME:.metadata.name | grep consul-ui)
  CONSUL=$(kubectl get svc -n consul $CONSUL_SVC_NAME -o jsonpath='{.status.loadBalancer.ingress[?(@.hostname)].*}')
- echo -e "\e[0mK8s Consul UI is availabe in:\n\e[32mhttp://$consul"
+ echo -e "\e[0mK8s Consul UI is availabe in:\n\e[32mhttp://$CONSUL"
 
  # WP
+ WP_SVC_NAME=$(kubectl get svc -n wp -o custom-columns=NAME:.metadata.name | grep wordpress)
+ WP=$(kubectl get svc -n wp $WP_SVC_NAME -o jsonpath='{.status.loadBalancer.ingress[?(@.hostname)].*}')
+ echo -e "\e[0mK8s WordPress UI is availabe in:\n\e[32mhttp://$WP"
+ echo Username: user
+ echo Password: $(kubectl get secret --namespace wp $WP_SVC_NAME -o jsonpath="{.data.wordpress-password}" | base64 --decode)
+
 
 
