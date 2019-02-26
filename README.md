@@ -15,7 +15,7 @@ k8s spread across all 3 AZ with 1 master in each zone and 3 compute nodes spread
 We`ll use route 53 internal hosted dns zone without a real domain.
 If you want to use a real domain, that will work out great for you also, especially with k8s ingress sub-domain HOST proxy redirect will help you to save money on LoadBalancer and expose internal services with ease.
 
-We are going to run a dummy-exporter, Nginx ingress controller, k8s-dashboard, Heapster, Kube-state-metrics, node exporters, Prometheus-operator, Grafana, alert manager cluster, fluentd daemonset, kibana and elastic search (on separate vm).
+We are going to run a dummy-exporter, Nginx ingress controller, k8s-dashboard, Heapster, Kube-state-metrics, node exporters, Prometheus-operator, Grafana, alert manager cluster, fluentd daemonset, kibana and elastic search (on separate vm), consul servers and agents and every node, Jmeter setup with 1 master 6 slaves influx db and Grafana, WordPress scalable setup with 3 replicas.
 
 ## Installation requirements
 
@@ -192,6 +192,24 @@ Then after you already see the dashboards ui requesting the token:
 - Password: `$ kops get secrets --type secret admin -oplaintext`
 
 this is done with security in mind preventing admin privileges strait of from authentication stage to the api server and not the dashboard itself.
+
+### Running load test
+
+jmeter setup for load testing the wordpress blog is deployed in the cluster using kubernauts jmeter setup.
+
+load will simulate on 6 slaves each running 500 users. Each user will be hitting the main page of the blog and searching a keyword right after that to find matching blogs.
+
+The load will only operate for few minutes once started.
+
+to start the tests:
+
+    cd /manifests/load-test
+    ./start-test.sh
+    # if you wish to suddenly stop a running test
+    ./stop-test.sh
+
+To check what is going on during the run go to the matching Grafana dashboard
+[load-test](./load-test.png)
 
 ## Teardown
 
