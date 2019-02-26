@@ -28,7 +28,7 @@ kubectl apply -f heapster-v1.11.0.yaml
  # Deploy Fluentd and kibana
  
  kubectl apply -f fluentd-es-configmap.yaml -f fluentd-es-ds.yaml -f kibana-deployment.yaml -f kibana-service.yaml
- sed -r 's/(\b[0-9]{1,3}\.){3}[0-9]{1,3}\b'/$ES_IP_ADDRESS/ es-service.yaml| kubectl.exe apply -f -
+ sed -r 's/(\b[0-9]{1,3}\.){3}[0-9]{1,3}\b'/$ES_IP_ADDRESS/ es-service.yaml| kubectl apply -f -
 
  # Deploy jmeter
 
@@ -42,12 +42,12 @@ kubectl apply -f heapster-v1.11.0.yaml
  kubectl apply -f tiller-rbac.yml
  helm init --service-account tiller
  sleep 20
- helm install --name consul --namespace consul ./consul-helm-0.6.0/
+ helm install --name consul --replace --namespace consul ./consul-helm-0.6.0/
 
  # Deploy metrics-server
 
  #kubectl apply -f ./metrics-server/
- helm install --namespace kube-system --name ms ./metrics-server-helm/
+ helm install --namespace kube-system --replace -n ms ./metrics-server-helm/
 
  # Helm install Wordpress
  helm install stable/nfs-server-provisioner --set persistence.enabled=true,persistence.size=11Gi
