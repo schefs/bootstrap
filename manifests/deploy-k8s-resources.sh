@@ -30,6 +30,12 @@ kubectl apply -f heapster-v1.11.0.yaml
  kubectl apply -f fluentd-es-configmap.yaml -f fluentd-es-ds.yaml -f kibana-deployment.yaml -f kibana-service.yaml
  sed -r 's/(\b[0-9]{1,3}\.){3}[0-9]{1,3}\b'/$ES_IP_ADDRESS/ es-service.yaml| kubectl.exe apply -f -
 
+ # Deploy jmeter
+
+    cd load-test/
+    ./jmeter_cluster_create.sh
+    ./dashboard.sh
+
  # Helm install consul
 
  kubectl apply -f tiller-rbac.yml
