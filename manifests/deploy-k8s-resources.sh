@@ -37,6 +37,11 @@ kubectl apply -f heapster-v1.11.0.yaml
  sleep 20
  helm install --name consul --namespace consul ./consul-helm-0.6.0/
 
+ # Deploy metrics-server
+
+ #kubectl apply -f ./metrics-server/
+
  # Helm install Wordpress
- helm install stable/nfs-server-provisioner --set persistence.enabled=true,persistence.size=10Gi
- helm install --name wp --namespace wp -f ./wp-values.yml stable/wordpress
+ helm install stable/nfs-server-provisioner --set persistence.enabled=true,persistence.size=11Gi
+ helm install --name wp --namespace default -f ./wp-values.yml stable/wordpress
+ kubectl apply -f wp-hpa.yml
