@@ -75,6 +75,9 @@ spec:
         - mountPath: /grafana-dashboard-definitions/0/dummy-exporter
           name: grafana-dashboard-k8s-dummy-exporter
           readOnly: false
+        - mountPath: /grafana-dashboard-definitions/0/jmeter-load-test
+          name: grafana-dashboard-k8s-jmeter-load-test
+          readOnly: false
       securityContext:
         runAsNonRoot: true
         runAsUser: 65534
@@ -118,3 +121,6 @@ spec:
       - configMap:
           name: grafana-dashboard-k8s-dummy-exporter
         name: grafana-dashboard-k8s-dummy-exporter
+      - configMap:
+          name: grafana-dashboard-k8s-jmeter-load-test
+        name: grafana-dashboard-k8s-jmeter-load-test
