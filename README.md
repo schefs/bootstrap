@@ -209,7 +209,7 @@ to start the tests:
     ./stop-test.sh
 
 To check what is going on during the run go to the matching Grafana dashboard
-[load-test](./load-test.png)
+![load-test](./load-test.png)
 
 ## Teardown
 
