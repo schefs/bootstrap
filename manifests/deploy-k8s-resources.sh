@@ -35,6 +35,7 @@ kubectl apply -f heapster-v1.11.0.yaml
     cd load-test/
     ./jmeter_cluster_create.sh
     ./dashboard.sh
+    cd ../
 
  # Helm install consul
 
