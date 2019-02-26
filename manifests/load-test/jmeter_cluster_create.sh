@@ -4,16 +4,16 @@
 
 working_dir=`pwd`
 
-echo "checking if kubectl is present"
+# echo "checking if kubectl is present"
 
-if ! hash kubectl 2>/dev/null
-then
-    echo "'kubectl' was not found in PATH"
-    echo "Kindly ensure that you can acces an existing kubernetes cluster via kubectl"
-    exit
-fi
+# if ! hash kubectl 2>/dev/null
+# then
+#     echo "'kubectl' was not found in PATH"
+#     echo "Kindly ensure that you can acces an existing kubernetes cluster via kubectl"
+#     exit
+# fi
 
-kubectl version --short
+# kubectl version --short
 
 tenant=load-test
 
