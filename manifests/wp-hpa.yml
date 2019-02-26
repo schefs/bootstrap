@@ -2,7 +2,7 @@ apiVersion: autoscaling/v1
 kind: HorizontalPodAutoscaler
 metadata:
     name: wp-autoscaler
-    namespace: wp
+    namespace: default
 spec:
     scaleTargetRef:
         apiVersion: extensions/v1beta1
