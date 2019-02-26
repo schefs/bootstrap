@@ -26,11 +26,11 @@ echo -e "\e[0mK8s Dashboard UI is availabe in:\n\e[32m$SERVER$DASHBOARD_PATH"
  echo -e "\e[0mK8s Consul UI is availabe in:\n\e[32mhttp://$CONSUL"
 
  # WP
- WP_SVC_NAME=$(kubectl get svc -n wp -o custom-columns=NAME:.metadata.name | grep wordpress)
- WP=$(kubectl get svc -n wp $WP_SVC_NAME -o jsonpath='{.status.loadBalancer.ingress[?(@.hostname)].*}')
+ WP_SVC_NAME=$(kubectl get svc -n default -o custom-columns=NAME:.metadata.name | grep wordpress)
+ WP=$(kubectl get svc -n default $WP_SVC_NAME -o jsonpath='{.status.loadBalancer.ingress[?(@.hostname)].*}')
  echo -e "\e[0mK8s WordPress UI is availabe in:\n\e[32mhttp://$WP"
  echo Username: user
- echo Password: $(kubectl get secret --namespace wp $WP_SVC_NAME -o jsonpath="{.data.wordpress-password}" | base64 --decode)
+ echo Password: $(kubectl get secret --namespace default $WP_SVC_NAME -o jsonpath="{.data.wordpress-password}" | base64 --decode)
 
 
 
