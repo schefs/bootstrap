@@ -47,9 +47,10 @@ kubectl apply -f heapster-v1.11.0.yaml
  # Deploy metrics-server
 
  #kubectl apply -f ./metrics-server/
- helm install --namespace kube-system --replace -n ms ./metrics-server/
+ #helm install --namespace kube-system --replace -n ms ./metrics-server/
 
  # Helm install Wordpress
  helm install -n nfs --replace stable/nfs-server-provisioner --set persistence.enabled=true,persistence.size=11Gi
  helm install --name wp --namespace default -f ./wp-values.yml --replace stable/wordpress
- kubectl apply -f wp-hpa.yml
+ #kubectl apply -f wp-hpa.yml
+ 
