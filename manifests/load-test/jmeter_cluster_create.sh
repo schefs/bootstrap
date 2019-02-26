@@ -15,17 +15,7 @@ fi
 
 kubectl version --short
 
-echo "Current list of namespaces on the kubernetes cluster:"
-
-echo
-
-kubectl get namespaces | grep -v NAME | awk '{print $1}'
-
-echo
-
-echo "Enter the name of the new tenant unique name, this will be used to create the namespace"
-read tenant
-echo
+tenant=load-test
 
 #Check If namespace exists
 
