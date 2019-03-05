@@ -15,7 +15,7 @@ k8s spread across all 3 AZ with 1 master in each zone and 3 compute nodes spread
 We`ll use route 53 internal hosted dns zone without a real domain.
 If you want to use a real domain, that will work out great for you also, especially with k8s ingress sub-domain HOST proxy redirect will help you to save money on LoadBalancer and expose internal services with ease.
 
-We are going to run a dummy-exporter, Nginx ingress controller, k8s-dashboard, Heapster, Kube-state-metrics, node exporters, Prometheus-operator, Grafana, alert manager cluster, fluentd daemonset, kibana and elastic search (on separate vm), consul servers and agents and every node, Jmeter setup with 1 master 3 slaves influx db and Grafana, WordPress scalable setup with 3 replicas.
+We are going to run a Dummy-exporter, Nginx ingress controller, k8s-dashboard, Heapster, Kube-state-metrics, node exporters, Prometheus-operator, Grafana, alert manager cluster, fluentd daemonset, kibana and elastic search (on separate vm), consul servers and agents and every node, Jmeter setup with 1 master 3 slaves influx db and Grafana, WordPress scalable setup with 3 replicas,jenkins,metrics server,.
 
 ## Installation requirements
 
@@ -163,7 +163,7 @@ From this host you can ssh to any host you desire in you vpc
     $ cd ../manifests
     $ ./deploy-k8s-resources.sh
 
-### Accessing backed services
+### Accessing back-end services
 
 Common used resources are accessible through ingress/LB/API proxy.
 
